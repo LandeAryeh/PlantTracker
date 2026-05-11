@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Balcony Garden — DEMO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4efe6;
+    --bg-soft: #ebe4d5;
+    --paper: #fbf8f1;
+    --ink: #2a2419;
+    --ink-soft: #5b513f;
+    --ink-faint: #8a8270;
+    --leaf: #4a6b3a;
+    --leaf-deep: #2f4a25;
+    --leaf-light: #7a9163;
+    --terracotta: #b85c3a;
+    --terracotta-soft: #d68a6a;
+    --clay: #c89970;
+    --sun: #e8a838;
+    --rule: #d9d0bd;
+    --shadow: 0 1px 2px rgba(42,36,25,0.06), 0 8px 24px rgba(42,36,25,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { background: var(--bg); color: var(--ink); }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 400;
+    line-height: 1.5;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(122,145,99,0.08) 0%, transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(184,92,58,0.06) 0%, transparent 40%);
+  }
+
+  /* Subtle paper grain */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.4;
+    z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='2' /%3E%3CfeColorMatrix values='0 0 0 0 0.16 0 0 0 0 0.14 0 0 0 0 0.10 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px 32px 80px;
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 32px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+  }
+
+  .brand .eyebrow {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 8px;
+  }
+
+  .brand h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: clamp(36px, 5vw, 56px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .brand h1 em {
+    font-style: italic;
+    color: var(--leaf-deep);
+  }
+
+  .brand .subtitle {
+    margin-top: 10px;
+    font-size: 14px;
+    color: var(--ink-soft);
+    font-style: italic;
+    font-family: 'Fraunces', serif;
+  }
+
+  /* Weather panel */
+  .weather {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 18px 22px;
+    min-width: 280px;
+    box-shadow: var(--shadow);
+  }
+  .weather .w-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 8px;
+  }
+  .weather .w-main {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .weather .w-temp {
+    font-family: 'Fraunces', serif;
+    font-size: 38px;
+    font-weight: 400;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .weather .w-cond {
+    font-size: 14px;
+    color: var(--ink-soft);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+  }
+  .weather .w-detail {
+    font-size: 12px;
+    color: var(--ink-faint);
+    line-height: 1.6;
+  }
+  .weather.loading .w-temp { color: var(--ink-faint); }
+
+  .w-graph {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--rule);
+  }
+  .w-graph svg { width: 100%; height: auto; display: block; }
+  .w-graph-legend {
+    margin-top: 6px;
+    font-size: 10px;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: center;
+  }
+  .w-graph-legend .legend-arrow {
+    color: var(--leaf);
+    font-size: 12px;
+  }
+
+  /* Countdown bar */
+  .countdown {
+    margin-top: 14px;
+    margin-bottom: 14px;
+  }
+  .countdown-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 5px;
+  }
+  .countdown-time {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 12px;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .countdown-bar {
+    height: 6px;
+    background: var(--bg-soft);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+  }
+  .countdown-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s ease, background-color 0.6s ease;
+  }
+
+  /* Watering instructions */
+  .watering-how {
+    background: var(--bg-soft);
+    border-left: 2px solid var(--leaf-light);
+    padding: 10px 12px;
+    margin-bottom: 16px;
+    border-radius: 0 3px 3px 0;
+  }
+  .watering-how-label {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 4px;
+  }
+  .watering-how-text {
+    font-family: 'Fraunces', serif;
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.45;
+    font-style: italic;
+  }
+
+  /* History delete button */
+  .history-item {
+    position: relative;
+  }
+  .h-delete {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--ink-faint);
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    padding: 4px 7px;
+    border-radius: 3px;
+    opacity: 0.4;
+    transition: opacity 0.2s ease, color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    font-family: 'Inter', sans-serif;
+  }
+  .history-item:hover .h-delete { opacity: 1; }
+  .h-delete:hover {
+    color: var(--terracotta);
+    border-color: var(--terracotta-soft);
+    background: var(--paper);
+  }
+
+  /* Conditions strip */
+  .conditions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    margin-bottom: 40px;
+    overflow: hidden;
+  }
+  .cond-item {
+    padding: 16px 20px;
+    border-right: 1px solid var(--rule);
+  }
+  .cond-item:last-child { border-right: none; }
+  .cond-label {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 6px;
+  }
+  .cond-value {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    color: var(--ink);
+  }
+  .cond-note {
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+
+  /* Plant grid */
+  .plants {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+  }
+
+  .plant {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 28px 26px 24px;
+    box-shadow: var(--shadow);
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+  }
+  .plant:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(42,36,25,0.08), 0 16px 36px rgba(42,36,25,0.10);
+  }
+
+  .plant-illustration {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .plant-illustration svg { width: 100%; height: 100%; }
+
+  .plant-name {
+    font-family: 'Fraunces', serif;
+    font-size: 26px;
+    font-weight: 500;
+    text-align: center;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .plant-latin {
+    text-align: center;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 12px;
+    color: var(--ink-faint);
+    margin-bottom: 18px;
+  }
+
+  /* Recommendation badge */
+  .rec {
+    text-align: center;
+    padding: 14px 12px;
+    border-radius: 3px;
+    margin-bottom: 14px;
+    border: 1px solid transparent;
+  }
+  .rec-label {
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 6px;
+    opacity: 0.85;
+  }
+  .rec-verdict {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 1.15;
+  }
+
+  .rec.water-now {
+    background: linear-gradient(135deg, #d2e0c3, #c0d4ad);
+    border-color: var(--leaf-light);
+    color: var(--leaf-deep);
+  }
+  .rec.water-soon {
+    background: linear-gradient(135deg, #f6e8c8, #f1dcab);
+    border-color: var(--sun);
+    color: #6b4a13;
+  }
+  .rec.hold {
+    background: linear-gradient(135deg, #ecdfd0, #e2d2bc);
+    border-color: var(--clay);
+    color: #5b4226;
+  }
+
+  .reasoning {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+    margin-bottom: 18px;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    text-align: center;
+    min-height: 36px;
+  }
+
+  .last-watered {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 10px 0;
+    border-top: 1px dashed var(--rule);
+    border-bottom: 1px dashed var(--rule);
+    margin-bottom: 16px;
+  }
+  .lw-label {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .lw-value {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    color: var(--ink);
+  }
+
+  .water-btn {
+    width: 100%;
+    padding: 13px 16px;
+    background: var(--leaf-deep);
+    color: var(--paper);
+    border: none;
+    border-radius: 3px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+    margin-top: auto;
+  }
+  .water-btn:hover { background: var(--leaf); }
+  .water-btn:active { transform: scale(0.98); }
+  .water-btn.undo {
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1px solid var(--rule);
+    margin-top: 8px;
+    padding: 8px;
+    font-size: 11px;
+  }
+  .water-btn.undo:hover { background: var(--bg-soft); color: var(--ink); }
+
+  /* History */
+  .history {
+    margin-top: 56px;
+    padding-top: 32px;
+    border-top: 1px solid var(--rule);
+  }
+  .history h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 24px;
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+  .history .sub {
+    font-size: 12px;
+    color: var(--ink-faint);
+    font-style: italic;
+    font-family: 'Fraunces', serif;
+    margin-bottom: 20px;
+  }
+  .history-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .history-item {
+    display: grid;
+    grid-template-columns: 100px 1fr auto auto;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px dotted var(--rule);
+    font-size: 14px;
+    align-items: center;
+  }
+  .history-item:last-child { border-bottom: none; }
+  .h-date {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 13px;
+  }
+  .h-plant {
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .h-time {
+    font-size: 11px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .empty {
+    font-style: italic;
+    color: var(--ink-faint);
+    font-family: 'Fraunces', serif;
+    padding: 12px 0;
+  }
+
+  footer {
+    margin-top: 60px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  footer em {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--leaf);
+  }
+
+  /* Loading state */
+  .skeleton {
+    background: linear-gradient(90deg, var(--bg-soft) 0%, var(--paper) 50%, var(--bg-soft) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 3px;
+    color: transparent;
+  }
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--ink);
+    color: var(--paper);
+    padding: 12px 22px;
+    border-radius: 3px;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 100;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  @media (max-width: 600px) {
+    .wrap { padding: 32px 20px 60px; }
+    header { flex-direction: column; align-items: stretch; }
+    .weather { min-width: 0; }
+    .history-item { grid-template-columns: 80px 1fr auto auto; gap: 10px; font-size: 13px; }
+  }
+
+  /* Demo ribbon */
+  .demo-ribbon {
+    background: var(--terracotta);
+    color: var(--paper);
+    text-align: center;
+    padding: 8px 16px;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    font-weight: 500;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.08);
+  }
+  .demo-ribbon em {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 400;
+    opacity: 0.92;
+    margin-left: 8px;
+  }
+  .reset-demo {
+    margin-top: 24px;
+    text-align: center;
+  }
+  .reset-demo button {
+    background: transparent;
+    color: var(--ink-faint);
+    border: 1px solid var(--rule);
+    padding: 8px 18px;
+    border-radius: 3px;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .reset-demo button:hover {
+    color: var(--terracotta);
+    border-color: var(--terracotta-soft);
+    background: var(--paper);
+  }
+</style>
+</head>
+<body>
+<div class="demo-ribbon">Demo Version <em>· play freely, real garden unaffected</em></div>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <div class="eyebrow">A Garden Journal</div>
+      <h1>The Balcony at <em>Denny Avenue</em></h1>
+      <div class="subtitle">East-facing pots · morning sun until two</div>
+    </div>
+    <div class="weather loading" id="weather">
+      <div class="w-label" id="wLocation">Right now in Toluca Lake</div>
+      <div class="w-main">
+        <div class="w-temp" id="wTemp">—°</div>
+        <div class="w-cond" id="wCond">checking the sky…</div>
+      </div>
+      <div class="w-detail" id="wDetail">&nbsp;</div>
+      <div class="w-graph" id="wGraph"></div>
+      <div class="w-graph-legend">
+        <span class="legend-arrow">▲</span> optimal watering times today
+      </div>
+    </div>
+  </header>
+
+  <div class="conditions" id="conditions">
+    <div class="cond-item">
+      <div class="cond-label">Season</div>
+      <div class="cond-value" id="season">—</div>
+      <div class="cond-note" id="seasonNote">&nbsp;</div>
+    </div>
+    <div class="cond-item">
+      <div class="cond-label">UV Index</div>
+      <div class="cond-value" id="uv">—</div>
+      <div class="cond-note" id="uvNote">today's peak</div>
+    </div>
+    <div class="cond-item">
+      <div class="cond-label">Recent Rain</div>
+      <div class="cond-value" id="rain">—</div>
+      <div class="cond-note" id="rainNote">last 3 days</div>
+    </div>
+    <div class="cond-item">
+      <div class="cond-label">Next 3 Days</div>
+      <div class="cond-value" id="forecast">—</div>
+      <div class="cond-note" id="forecastNote">&nbsp;</div>
+    </div>
+    <div class="cond-item">
+      <div class="cond-label">Light</div>
+      <div class="cond-value">Strong AM Sun</div>
+      <div class="cond-note">sunrise → ~2pm</div>
+    </div>
+  </div>
+
+  <div class="plants" id="plants"></div>
+
+  <section class="history">
+    <h2>Watering Log</h2>
+    <div class="sub">A quiet record of recent care.</div>
+    <ul class="history-list" id="historyList"></ul>
+  </section>
+
+  <div class="reset-demo">
+    <button id="resetDemo">Reset Demo Data</button>
+  </div>
+
+  <footer>A demo of <em>The Balcony at Denny Avenue</em></footer>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============ PLANT DEFINITIONS ============
+const PLANTS = {
+  basil: {
+    name: 'Basil',
+    latin: 'Ocimum basilicum',
+    // Days between waterings under "average" conditions (mild, ~70°F)
+    baselineDays: 1.5,
+    // Heat sensitivity multiplier — basil wilts fast
+    heatFactor: 1.6,
+    // Drought tolerance — lower means dries out faster
+    droughtTolerance: 0.3,
+    notes: 'thirsty; wilts visibly when dry',
+    wateringHow: 'Pour at the soil base — never on the leaves. Use a gentle stream of room-temperature water until you see a little draining from the bottom. Stop there. Soggy roots kill basil faster than thirst.',
+    illustration: `<svg viewBox="0 0 100 100">
+      <path d="M50 88 L50 60" stroke="#4a6b3a" stroke-width="2.5" fill="none"/>
+      <ellipse cx="38" cy="55" rx="14" ry="9" fill="#5a7a45" transform="rotate(-30 38 55)"/>
+      <ellipse cx="62" cy="55" rx="14" ry="9" fill="#5a7a45" transform="rotate(30 62 55)"/>
+      <ellipse cx="42" cy="40" rx="13" ry="8" fill="#6b8a55" transform="rotate(-20 42 40)"/>
+      <ellipse cx="58" cy="40" rx="13" ry="8" fill="#6b8a55" transform="rotate(20 58 40)"/>
+      <ellipse cx="50" cy="28" rx="11" ry="7" fill="#7a9163"/>
+      <path d="M30 88 L70 88 L66 95 L34 95 Z" fill="#b85c3a"/>
+    </svg>`
+  },
+  oregano: {
+    name: 'Oregano',
+    latin: 'Origanum vulgare',
+    baselineDays: 4,
+    heatFactor: 1.2, // Mediterranean, less heat-sensitive
+    droughtTolerance: 0.8, // tolerates drying
+    notes: 'Mediterranean; prefers drying between waterings',
+    wateringHow: 'Light, infrequent. Sprinkle the soil surface with droplets — just enough to moisten the top inch. Let the pot dry out completely between waterings; oregano resents wet feet and rewards neglect with stronger flavor.',
+    illustration: `<svg viewBox="0 0 100 100">
+      <path d="M50 90 L48 50 M50 90 L55 55 M50 90 L42 60" stroke="#5a7a45" stroke-width="1.5" fill="none"/>
+      <circle cx="48" cy="48" r="3" fill="#7a9163"/>
+      <circle cx="44" cy="42" r="3" fill="#7a9163"/>
+      <circle cx="52" cy="42" r="3" fill="#7a9163"/>
+      <circle cx="55" cy="53" r="3" fill="#6b8a55"/>
+      <circle cx="59" cy="48" r="3" fill="#7a9163"/>
+      <circle cx="42" cy="58" r="3" fill="#6b8a55"/>
+      <circle cx="38" cy="52" r="3" fill="#7a9163"/>
+      <circle cx="46" cy="35" r="3" fill="#8aa173"/>
+      <circle cx="54" cy="35" r="3" fill="#8aa173"/>
+      <circle cx="50" cy="28" r="3" fill="#8aa173"/>
+      <path d="M30 90 L70 90 L66 96 L34 96 Z" fill="#b85c3a"/>
+    </svg>`
+  },
+  tomatoes: {
+    name: 'Tomatoes',
+    latin: 'Solanum lycopersicum',
+    baselineDays: 2,
+    heatFactor: 1.5,
+    droughtTolerance: 0.4,
+    notes: 'deep drinks; consistent moisture prevents cracking',
+    wateringHow: 'Long, slow, deep soak at the base — keep water off the leaves to prevent disease. Run water until it drips steadily from the bottom, then count to ten. Even moisture prevents blossom-end rot and split fruit.',
+    illustration: `<svg viewBox="0 0 100 100">
+      <path d="M50 85 L50 35" stroke="#4a6b3a" stroke-width="2" fill="none"/>
+      <ellipse cx="38" cy="45" rx="10" ry="5" fill="#5a7a45" transform="rotate(-20 38 45)"/>
+      <ellipse cx="62" cy="45" rx="10" ry="5" fill="#5a7a45" transform="rotate(20 62 45)"/>
+      <circle cx="42" cy="60" r="9" fill="#c44531"/>
+      <circle cx="40" cy="58" r="2" fill="#e07560" opacity="0.7"/>
+      <circle cx="60" cy="65" r="10" fill="#b53d2a"/>
+      <circle cx="58" cy="62" r="2.5" fill="#d96550" opacity="0.7"/>
+      <path d="M40 51 L44 55 L40 55 Z M58 56 L62 60 L58 60 Z" fill="#4a6b3a"/>
+      <path d="M30 85 L70 85 L66 92 L34 92 Z" fill="#b85c3a"/>
+    </svg>`
+  },
+  potatoes: {
+    name: 'Potatoes',
+    latin: 'Solanum tuberosum',
+    baselineDays: 1.5,
+    heatFactor: 1.4,
+    droughtTolerance: 0.35,
+    notes: 'in pots, dries quickly; consistent moisture for tubers',
+    wateringHow: 'Soak thoroughly at the base until water runs out the drainage holes. The whole root zone needs to be wet — uneven watering causes hollow, knobby tubers. Avoid wetting any exposed leaves to prevent blight.',
+    illustration: `<svg viewBox="0 0 100 100">
+      <path d="M40 78 Q42 50 35 30 M50 78 Q50 45 50 25 M60 78 Q58 50 65 32" stroke="#5a7a45" stroke-width="2" fill="none"/>
+      <ellipse cx="35" cy="30" rx="9" ry="6" fill="#6b8a55" transform="rotate(-30 35 30)"/>
+      <ellipse cx="50" cy="25" rx="9" ry="6" fill="#7a9163"/>
+      <ellipse cx="65" cy="32" rx="9" ry="6" fill="#6b8a55" transform="rotate(30 65 32)"/>
+      <ellipse cx="42" cy="40" rx="7" ry="4" fill="#7a9163" transform="rotate(-20 42 40)"/>
+      <ellipse cx="58" cy="40" rx="7" ry="4" fill="#7a9163" transform="rotate(20 58 40)"/>
+      <path d="M28 78 L72 78 L68 94 L32 94 Z" fill="#b85c3a"/>
+      <ellipse cx="44" cy="86" rx="4" ry="3" fill="#c89970" opacity="0.7"/>
+      <ellipse cx="56" cy="88" rx="4" ry="3" fill="#c89970" opacity="0.7"/>
+    </svg>`
+  }
+};
+
+// ============ STATE ============
+let state = {
+  waterings: {}, // { plantKey: ISO timestamp of last watering }
+  log: []        // [{ plant, ts }]
+};
+
+let weather = null; // populated from API
+
+// ============ STORAGE ============
+// DEMO VERSION — uses a separate storage key so test waterings never touch the real log.
+const STORAGE_KEY = 'plant-tracker-state-DEMO';
+
+async function loadState() {
+  try {
+    const result = await window.storage.get(STORAGE_KEY, true);
+    if (result && result.value) {
+      state = JSON.parse(result.value);
+      if (!state.waterings) state.waterings = {};
+      if (!state.log) state.log = [];
+      // Migrate older entries without IDs
+      state.log.forEach((e, i) => {
+        if (!e.id) e.id = `${e.ts}-${e.plant}-${i}`;
+      });
+    }
+  } catch (e) {
+    // first run, no data yet
+  }
+}
+
+function makeId() {
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+async function saveState() {
+  try {
+    await window.storage.set(STORAGE_KEY, JSON.stringify(state), true);
+  } catch (e) {
+    console.error('Save failed', e);
+  }
+}
+
+// ============ WEATHER ============
+// Coordinates for 4749 Denny Ave, North Hollywood (San Fernando Valley side of LA — Toluca Lake/NoHo)
+// The Valley runs notably hotter than coastal/central LA; using local Valley coords ensures
+// Open-Meteo's high-res HRRR model returns valley-specific temps, not basin-averaged data.
+const LAT = 34.171;
+const LON = -118.379;
+const LOCATION_LABEL = 'Toluca Lake / NoHo (Valley)';
+
+async function fetchWeather() {
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}` +
+      `&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,uv_index` +
+      `&hourly=temperature_2m,uv_index` +
+      `&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code,uv_index_max,sunrise,sunset` +
+      `&past_days=3&forecast_days=4&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=America%2FLos_Angeles&models=best_match`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('weather fetch failed');
+    weather = await res.json();
+    renderWeather();
+    renderConditions();
+    renderPlants(); // re-render to apply weather to recommendations
+  } catch (e) {
+    document.getElementById('wCond').textContent = 'weather unavailable';
+    document.getElementById('weather').classList.remove('loading');
+  }
+}
+
+function weatherCodeToText(code) {
+  // Open-Meteo WMO weather codes, simplified
+  if (code === 0) return 'clear sky';
+  if (code <= 3) return 'partly cloudy';
+  if (code <= 48) return 'fog';
+  if (code <= 57) return 'drizzle';
+  if (code <= 67) return 'rain';
+  if (code <= 77) return 'snow';
+  if (code <= 82) return 'rain showers';
+  return 'overcast';
+}
+
+function renderWeather() {
+  if (!weather) return;
+  const c = weather.current;
+  document.getElementById('wTemp').textContent = `${Math.round(c.temperature_2m)}°`;
+  document.getElementById('wCond').textContent = weatherCodeToText(c.weather_code);
+  document.getElementById('wDetail').innerHTML =
+    `Humidity ${Math.round(c.relative_humidity_2m)}% &nbsp;·&nbsp; Wind ${Math.round(c.wind_speed_10m)} mph`;
+  document.getElementById('weather').classList.remove('loading');
+  renderHourlyGraph();
+}
+
+function renderHourlyGraph() {
+  if (!weather || !weather.hourly) return;
+  const hourly = weather.hourly;
+  // Get today's 24 hours
+  const today = new Date().toISOString().slice(0,10);
+  const indices = [];
+  hourly.time.forEach((t, i) => {
+    if (t.startsWith(today)) indices.push(i);
+  });
+  if (indices.length < 12) return;
+
+  const temps = indices.map(i => hourly.temperature_2m[i]);
+  const uvs = indices.map(i => hourly.uv_index[i] || 0);
+
+  const minT = Math.min(...temps);
+  const maxT = Math.max(...temps);
+  const range = Math.max(8, maxT - minT);
+  const padTop = 18, padBot = 28, padX = 14;
+  const w = 280, h = 110;
+  const plotW = w - padX * 2;
+  const plotH = h - padTop - padBot;
+
+  // Build polyline points
+  const points = temps.map((t, i) => {
+    const x = padX + (i / (temps.length - 1)) * plotW;
+    const y = padTop + (1 - (t - minT) / range) * plotH;
+    return [x, y, t, i];
+  });
+
+  // Current hour marker
+  const nowHour = new Date().getHours();
+  const nowPt = points[nowHour] || points[points.length - 1];
+
+  // Determine optimal watering hours:
+  // - Early morning: 5-7am, before sun (low UV, cooler temps)
+  // - Evening: 5-7pm, after the east-facing sun has moved off (~2pm) and heat is dropping
+  // Pick the coolest hour in 5-7am range and 5-8pm range
+  function bestHourInRange(start, end) {
+    let bestI = start, bestScore = -Infinity;
+    for (let i = start; i <= end && i < temps.length; i++) {
+      // Lower temp AND lower UV = better. Score = -temp - UV*3
+      const score = -temps[i] - uvs[i] * 3;
+      if (score > bestScore) { bestScore = score; bestI = i; }
+    }
+    return bestI;
+  }
+  const morningPick = bestHourInRange(5, 7);
+  const eveningPick = bestHourInRange(17, 20);
+
+  // Build path
+  const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');
+  // Area under curve
+  const areaD = pathD + ` L ${points[points.length-1][0].toFixed(1)} ${padTop + plotH} L ${points[0][0].toFixed(1)} ${padTop + plotH} Z`;
+
+  // Hour labels (6am, noon, 6pm)
+  const hourLabels = [
+    { h: 6, label: '6a' },
+    { h: 12, label: '12p' },
+    { h: 18, label: '6p' }
+  ];
+
+  // Sun-on-balcony shading: sunrise to 2pm (approx)
+  const todayStr = new Date().toISOString().slice(0,10);
+  const todayDailyIdx = weather.daily.time.findIndex(d => d === todayStr);
+  const sunriseStr = todayDailyIdx >= 0 && weather.daily.sunrise ? weather.daily.sunrise[todayDailyIdx] : null;
+  let sunStartHour = 6.5; // default fallback
+  if (sunriseStr) {
+    const sr = new Date(sunriseStr);
+    sunStartHour = sr.getHours() + sr.getMinutes() / 60;
+  }
+  const sunEndHour = 14; // 2pm balcony cutoff per user spec
+  const sunX1 = padX + (sunStartHour / 23) * plotW;
+  const sunX2 = padX + (sunEndHour / 23) * plotW;
+
+  const arrowAt = (hourIdx, color) => {
+    const p = points[hourIdx];
+    if (!p) return '';
+    const ax = p[0];
+    const ay = padTop + plotH + 6;
+    return `
+      <g>
+        <path d="M ${ax} ${ay} L ${ax - 4} ${ay + 8} L ${ax + 4} ${ay + 8} Z" fill="${color}"/>
+        <text x="${ax}" y="${ay + 20}" text-anchor="middle" font-family="Fraunces, serif" font-style="italic" font-size="10" fill="#5b513f">${formatHour(hourIdx)}</text>
+      </g>
+    `;
+  };
+
+  function formatHour(h) {
+    if (h === 0) return '12a';
+    if (h < 12) return `${h}a`;
+    if (h === 12) return '12p';
+    return `${h - 12}p`;
+  }
+
+  const svg = `
+    <svg viewBox="0 0 ${w} ${h + 16}" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="tempGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#e8a838" stop-opacity="0.35"/>
+          <stop offset="100%" stop-color="#e8a838" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <!-- Sun-on-balcony band -->
+      <rect x="${sunX1.toFixed(1)}" y="${padTop}" width="${(sunX2 - sunX1).toFixed(1)}" height="${plotH}" fill="#e8a838" opacity="0.08"/>
+      <text x="${((sunX1 + sunX2) / 2).toFixed(1)}" y="${padTop - 6}" text-anchor="middle" font-family="Inter, sans-serif" font-size="8" letter-spacing="1" fill="#8a8270" text-transform="uppercase">DIRECT SUN</text>
+
+      <!-- Temperature area + line -->
+      <path d="${areaD}" fill="url(#tempGrad)"/>
+      <path d="${pathD}" fill="none" stroke="#b85c3a" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+
+      <!-- Min/Max labels -->
+      <text x="${padX}" y="${padTop - 6}" font-family="Fraunces, serif" font-style="italic" font-size="10" fill="#5b513f">${Math.round(maxT)}°</text>
+      <text x="${padX}" y="${padTop + plotH + 14}" font-family="Fraunces, serif" font-style="italic" font-size="10" fill="#5b513f">${Math.round(minT)}°</text>
+
+      <!-- Current hour dot -->
+      <circle cx="${nowPt[0].toFixed(1)}" cy="${nowPt[1].toFixed(1)}" r="3.5" fill="#2a2419"/>
+      <circle cx="${nowPt[0].toFixed(1)}" cy="${nowPt[1].toFixed(1)}" r="6" fill="#2a2419" opacity="0.18"/>
+
+      <!-- Optimal watering arrows -->
+      ${arrowAt(morningPick, '#4a6b3a')}
+      ${arrowAt(eveningPick, '#4a6b3a')}
+    </svg>
+  `;
+  document.getElementById('wGraph').innerHTML = svg;
+}
+
+function renderConditions() {
+  // Season
+  const month = new Date().getMonth(); // 0-11
+  let season, seasonNote;
+  if (month >= 5 && month <= 8) { season = 'Summer'; seasonNote = 'peak heat & sun'; }
+  else if (month >= 2 && month <= 4) { season = 'Spring'; seasonNote = 'mild & growing'; }
+  else if (month >= 9 && month <= 10) { season = 'Autumn'; seasonNote = 'cooler, shorter days'; }
+  else { season = 'Winter'; seasonNote = 'mild LA winter'; }
+  document.getElementById('season').textContent = season;
+  document.getElementById('seasonNote').textContent = seasonNote;
+
+  if (!weather) return;
+
+  // UV Index
+  const daily = weather.daily;
+  const todayIdx = daily.time.findIndex(d => d === new Date().toISOString().slice(0,10));
+  const uvMax = todayIdx >= 0 ? daily.uv_index_max[todayIdx] : null;
+  if (uvMax != null) {
+    const uvRounded = Math.round(uvMax);
+    let uvDesc;
+    if (uvRounded <= 2) uvDesc = 'low';
+    else if (uvRounded <= 5) uvDesc = 'moderate';
+    else if (uvRounded <= 7) uvDesc = 'high';
+    else if (uvRounded <= 10) uvDesc = 'very high';
+    else uvDesc = 'extreme';
+    document.getElementById('uv').textContent = `${uvRounded} · ${uvDesc}`;
+    document.getElementById('uvNote').textContent = "today's peak";
+  } else {
+    document.getElementById('uv').textContent = '—';
+  }
+
+  // Recent rain (past 3 days)
+  const pastStart = Math.max(0, todayIdx - 3);
+  let recentRain = 0;
+  for (let i = pastStart; i < todayIdx; i++) {
+    recentRain += daily.precipitation_sum[i] || 0;
+  }
+  document.getElementById('rain').textContent = recentRain > 0.05 ? `${recentRain.toFixed(2)}″` : 'None';
+  document.getElementById('rainNote').textContent = recentRain > 0.05 ? 'last 3 days' : 'dry stretch';
+
+  // Forecast next 3 days
+  const fcStart = todayIdx >= 0 ? todayIdx : 0;
+  const highs = [];
+  let upcomingRain = 0;
+  for (let i = fcStart; i < Math.min(fcStart + 3, daily.time.length); i++) {
+    highs.push(Math.round(daily.temperature_2m_max[i]));
+    upcomingRain += daily.precipitation_sum[i] || 0;
+  }
+  document.getElementById('forecast').textContent = highs.length ? `${Math.min(...highs)}–${Math.max(...highs)}°` : '—';
+  document.getElementById('forecastNote').textContent = upcomingRain > 0.05 ? `${upcomingRain.toFixed(2)}″ rain coming` : 'no rain expected';
+}
+
+// ============ RECOMMENDATION ENGINE ============
+function getRecommendation(plantKey) {
+  const plant = PLANTS[plantKey];
+  const lastIso = state.waterings[plantKey];
+  const now = new Date();
+
+  // If never watered → recommend now
+  if (!lastIso) {
+    return {
+      verdict: 'Water today',
+      level: 'water-now',
+      reason: 'No watering logged yet — give a thorough first drink.',
+      lastText: 'never logged',
+      hoursUntilCritical: 0,
+      adjustedTarget: plant.baselineDays,
+      thirstRatio: 1.0
+    };
+  }
+
+  const last = new Date(lastIso);
+  const hoursSince = (now - last) / (1000 * 60 * 60);
+  const daysSince = hoursSince / 24;
+
+  // Compute effective "thirst" score
+  // Start with baseline days for this plant
+  let targetDays = plant.baselineDays;
+
+  // Adjust for current temperature (if weather available)
+  let tempAdj = 1.0;
+  let rainAdj = 0;
+  let seasonAdj = 1.0;
+  let reasonBits = [];
+
+  if (weather) {
+    const currentTemp = weather.current.temperature_2m;
+    const daily = weather.daily;
+    const todayIdx = daily.time.findIndex(d => d === new Date().toISOString().slice(0,10));
+
+    // Average high over recent + upcoming few days
+    const startIdx = Math.max(0, todayIdx - 1);
+    const endIdx = Math.min(daily.time.length, todayIdx + 2);
+    let avgHigh = 0, count = 0;
+    for (let i = startIdx; i < endIdx; i++) {
+      avgHigh += daily.temperature_2m_max[i];
+      count++;
+    }
+    avgHigh = count ? avgHigh / count : currentTemp;
+
+    // Heat adjustment: above 80°F, plants need water sooner
+    if (avgHigh >= 90) {
+      tempAdj = 1 / (plant.heatFactor * 1.3);
+      reasonBits.push('hot stretch');
+    } else if (avgHigh >= 80) {
+      tempAdj = 1 / plant.heatFactor;
+      reasonBits.push('warm days');
+    } else if (avgHigh <= 65) {
+      tempAdj = 1.3; // cooler → less frequent
+      reasonBits.push('cool weather');
+    }
+
+    // Recent rain: subtract a partial day-equivalent
+    const pastStart = Math.max(0, todayIdx - 2);
+    let recentRain = 0;
+    for (let i = pastStart; i < todayIdx; i++) recentRain += daily.precipitation_sum[i] || 0;
+    if (recentRain > 0.1) {
+      rainAdj = Math.min(2, recentRain * 4); // 0.25" rain ≈ 1 day delay
+      reasonBits.push('recent rain helped');
+    }
+
+    // Upcoming rain in next 24-48h: if heavy, can delay
+    let upcomingRain = 0;
+    for (let i = todayIdx; i < Math.min(todayIdx + 2, daily.time.length); i++) {
+      upcomingRain += daily.precipitation_sum[i] || 0;
+    }
+    if (upcomingRain > 0.15) {
+      rainAdj += Math.min(1.5, upcomingRain * 3);
+      reasonBits.push('rain incoming');
+    }
+  }
+
+  // Season adjustment
+  const month = now.getMonth();
+  if (month >= 5 && month <= 8) {
+    seasonAdj = 0.85; // summer — slightly more frequent
+  } else if (month === 11 || month <= 1) {
+    seasonAdj = 1.3; // winter — less frequent
+    reasonBits.push('winter pace');
+  }
+
+  // Final target — total days from last watering until critical
+  const adjustedTarget = targetDays * tempAdj * seasonAdj + rainAdj;
+
+  // Compare daysSince to adjustedTarget
+  const thirstRatio = daysSince / adjustedTarget;
+  // Hours remaining until critical (negative = overdue)
+  const hoursUntilCritical = (adjustedTarget - daysSince) * 24;
+
+  let verdict, level, reason;
+
+  if (thirstRatio >= 1.0) {
+    verdict = 'Water today';
+    level = 'water-now';
+    if (reasonBits.length) {
+      reason = `${daysSince.toFixed(1)}d since last drink · ${reasonBits.join(', ')}.`;
+    } else {
+      reason = `${daysSince.toFixed(1)} days since last watering — time for a drink.`;
+    }
+  } else if (thirstRatio >= 0.7) {
+    verdict = 'Water tomorrow';
+    level = 'water-soon';
+    reason = reasonBits.length
+      ? `Getting thirsty · ${reasonBits.join(', ')}.`
+      : `Soil is drying — check tomorrow.`;
+  } else {
+    verdict = 'Hold off';
+    level = 'hold';
+    const daysLeft = Math.max(1, Math.round(adjustedTarget - daysSince));
+    reason = reasonBits.includes('recent rain helped') || reasonBits.includes('rain incoming')
+      ? `Still moist · ${reasonBits.join(', ')}.`
+      : `Soil should still be moist — check in ~${daysLeft} day${daysLeft > 1 ? 's' : ''}.`;
+  }
+
+  // Format "last watered" text
+  let lastText;
+  if (hoursSince < 1) lastText = 'just now';
+  else if (hoursSince < 24) lastText = `${Math.round(hoursSince)}h ago`;
+  else lastText = `${Math.round(daysSince)} day${Math.round(daysSince) !== 1 ? 's' : ''} ago`;
+
+  return { verdict, level, reason, lastText, hoursUntilCritical, adjustedTarget, thirstRatio };
+}
+
+// ============ COUNTDOWN ============
+// Returns { text, percent (0-100, 100 = critical), color }
+function getCountdown(rec) {
+  if (!rec.hoursUntilCritical && rec.hoursUntilCritical !== 0) {
+    return { text: 'water now', percent: 100, color: 'var(--terracotta)' };
+  }
+
+  const h = rec.hoursUntilCritical;
+  let text;
+  if (h <= 0) {
+    const overdueH = -h;
+    if (overdueH < 24) text = `overdue by ${Math.round(overdueH)}h`;
+    else text = `overdue by ${Math.round(overdueH / 24)}d`;
+  } else if (h < 24) {
+    text = `~${Math.round(h)}h until critical`;
+  } else {
+    const days = h / 24;
+    text = `~${days.toFixed(days < 2 ? 1 : 0)}d until critical`;
+  }
+
+  // Percent fills as we approach critical. thirstRatio: 0 = just watered, 1 = critical, >1 = overdue
+  const pct = Math.min(100, Math.max(4, rec.thirstRatio * 100));
+
+  // Color: green (0-50%) → orange (50-80%) → red (80-100%+)
+  let color;
+  if (rec.thirstRatio >= 0.95) {
+    color = '#b85c3a'; // red/terracotta
+  } else if (rec.thirstRatio >= 0.7) {
+    // Interpolate orange → red
+    const t = (rec.thirstRatio - 0.7) / 0.25;
+    color = lerpColor('#e8a838', '#b85c3a', t);
+  } else if (rec.thirstRatio >= 0.4) {
+    // Interpolate green → orange
+    const t = (rec.thirstRatio - 0.4) / 0.3;
+    color = lerpColor('#4a6b3a', '#e8a838', t);
+  } else {
+    color = '#4a6b3a'; // green
+  }
+
+  return { text, percent: pct, color };
+}
+
+function lerpColor(a, b, t) {
+  t = Math.max(0, Math.min(1, t));
+  const ah = a.replace('#',''), bh = b.replace('#','');
+  const ar = parseInt(ah.slice(0,2),16), ag = parseInt(ah.slice(2,4),16), ab = parseInt(ah.slice(4,6),16);
+  const br = parseInt(bh.slice(0,2),16), bg = parseInt(bh.slice(2,4),16), bb = parseInt(bh.slice(4,6),16);
+  const r = Math.round(ar + (br-ar)*t);
+  const g = Math.round(ag + (bg-ag)*t);
+  const bl = Math.round(ab + (bb-ab)*t);
+  return `rgb(${r},${g},${bl})`;
+}
+
+// ============ RENDERING ============
+function renderPlants() {
+  const container = document.getElementById('plants');
+  container.innerHTML = '';
+  Object.entries(PLANTS).forEach(([key, plant]) => {
+    const rec = getRecommendation(key);
+    const cd = getCountdown(rec);
+    const card = document.createElement('div');
+    card.className = 'plant';
+    card.innerHTML = `
+      <div class="plant-illustration">${plant.illustration}</div>
+      <div class="plant-name">${plant.name}</div>
+      <div class="plant-latin">${plant.latin}</div>
+      <div class="rec ${rec.level}">
+        <div class="rec-label">Today's Verdict</div>
+        <div class="rec-verdict">${rec.verdict}</div>
+      </div>
+      <div class="reasoning">${rec.reason}</div>
+      <div class="countdown">
+        <div class="countdown-label">
+          <span>Time until critical</span>
+          <span class="countdown-time">${cd.text}</span>
+        </div>
+        <div class="countdown-bar">
+          <div class="countdown-fill" style="width: ${cd.percent}%; background: ${cd.color};"></div>
+        </div>
+      </div>
+      <div class="watering-how">
+        <div class="watering-how-label">How to water</div>
+        <div class="watering-how-text">${plant.wateringHow}</div>
+      </div>
+      <div class="last-watered">
+        <span class="lw-label">Last watered</span>
+        <span class="lw-value">${rec.lastText}</span>
+      </div>
+      <button class="water-btn" data-plant="${key}">Mark as watered</button>
+      ${state.waterings[key] ? `<button class="water-btn undo" data-undo="${key}">Undo last watering</button>` : ''}
+    `;
+    container.appendChild(card);
+  });
+
+  // Bind buttons
+  container.querySelectorAll('.water-btn[data-plant]').forEach(btn => {
+    btn.addEventListener('click', () => waterPlant(btn.dataset.plant));
+  });
+  container.querySelectorAll('.water-btn[data-undo]').forEach(btn => {
+    btn.addEventListener('click', () => undoWatering(btn.dataset.undo));
+  });
+}
+
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  list.innerHTML = '';
+  if (!state.log.length) {
+    list.innerHTML = '<li class="empty">No waterings logged yet. The book is open.</li>';
+    return;
+  }
+  const recent = state.log.slice(-25).reverse();
+  recent.forEach(entry => {
+    const d = new Date(entry.ts);
+    const now = new Date();
+    const sameDay = d.toDateString() === now.toDateString();
+    const yesterday = new Date(now); yesterday.setDate(yesterday.getDate() - 1);
+    const isYesterday = d.toDateString() === yesterday.toDateString();
+    let dateText;
+    if (sameDay) dateText = 'Today';
+    else if (isYesterday) dateText = 'Yesterday';
+    else dateText = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+    const timeText = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    const li = document.createElement('li');
+    li.className = 'history-item';
+    li.innerHTML = `
+      <span class="h-date">${dateText}</span>
+      <span class="h-plant">${PLANTS[entry.plant]?.name || entry.plant} watered</span>
+      <span class="h-time">${timeText}</span>
+      <button class="h-delete" data-del-id="${entry.id}" title="Delete this entry" aria-label="Delete this entry">×</button>
+    `;
+    list.appendChild(li);
+  });
+
+  list.querySelectorAll('.h-delete').forEach(btn => {
+    btn.addEventListener('click', () => deleteLogEntry(btn.dataset.delId));
+  });
+}
+
+// ============ ACTIONS ============
+async function waterPlant(key) {
+  const now = new Date().toISOString();
+  state.waterings[key] = now;
+  state.log.push({ id: makeId(), plant: key, ts: now });
+  await saveState();
+  renderPlants();
+  renderHistory();
+  showToast(`${PLANTS[key].name} watered · noted.`);
+}
+
+async function undoWatering(key) {
+  // Remove most recent log entry for this plant
+  for (let i = state.log.length - 1; i >= 0; i--) {
+    if (state.log[i].plant === key) {
+      state.log.splice(i, 1);
+      break;
+    }
+  }
+  // Recompute last watering from log
+  const remaining = state.log.filter(e => e.plant === key);
+  if (remaining.length) {
+    state.waterings[key] = remaining[remaining.length - 1].ts;
+  } else {
+    delete state.waterings[key];
+  }
+  await saveState();
+  renderPlants();
+  renderHistory();
+  showToast(`Removed last ${PLANTS[key].name} watering.`);
+}
+
+async function deleteLogEntry(id) {
+  const idx = state.log.findIndex(e => e.id === id);
+  if (idx < 0) return;
+  const entry = state.log[idx];
+  if (!confirm(`Delete this ${PLANTS[entry.plant]?.name || entry.plant} watering from ${new Date(entry.ts).toLocaleString()}?`)) return;
+  state.log.splice(idx, 1);
+  // Recompute that plant's last watering from remaining log
+  const remaining = state.log.filter(e => e.plant === entry.plant);
+  if (remaining.length) {
+    state.waterings[entry.plant] = remaining[remaining.length - 1].ts;
+  } else {
+    delete state.waterings[entry.plant];
+  }
+  await saveState();
+  renderPlants();
+  renderHistory();
+  showToast(`Watering entry removed.`);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// ============ INIT ============
+(async function init() {
+  await loadState();
+  renderPlants();
+  renderHistory();
+  renderConditions();
+  await fetchWeather();
+  // Refresh weather every 30 min if tab stays open
+  setInterval(fetchWeather, 30 * 60 * 1000);
+  // Re-render periodically so "X hours ago" stays accurate
+  setInterval(() => { renderPlants(); renderHistory(); }, 60 * 1000);
+
+  // Demo reset button
+  const resetBtn = document.getElementById('resetDemo');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', async () => {
+      if (!confirm('Reset all demo waterings? This only affects the demo — your real garden log is untouched.')) return;
+      state = { waterings: {}, log: [] };
+      await saveState();
+      renderPlants();
+      renderHistory();
+      showToast('Demo data cleared.');
+    });
+  }
+})();
+</script>
+</body>
+</html>
